@@ -1,0 +1,1 @@
+  C:\Users\srini\Downloads\sonar-scanner-cli-5.0.1.3006-windows\sonar-scanner-5.0.1.3006-windows\bin\sonar-scanner.bat -D"sonar.projectKey=CPython" -D"sonar.sources=." -D"sonar.host.url=http://127.0.0.1:9000" -D"sonar.token=sqp_1bcaefc4b7c71051d87e101362b3646a55bf82d4"
