@@ -11,7 +11,7 @@
     Please navigate to `/account/security`  and visit “Generate Tokens” section and enter a token and select token type as `User Token` and click on `Generate` to generate a token. Copy it and hit  SonarQube endpoint with the following command
     
     ```
-    curl -u squ_fe3d0161bc61c9cc2195567015eaaae86f2aca28: http://localhost:9000/api/system/health
+    curl -u sqp_faa9f3b5cf4a24f452285f4b60ea585d6c3d202c: http://localhost:9000/api/system/health
     ```
     
 2. sqp_9481b0ede2c18d399a85fa55b8e7c75da3b7685c is CPython project token,
