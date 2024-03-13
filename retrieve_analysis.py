@@ -1,5 +1,10 @@
 import requests
 
+sonarqube_url = "http://127.0.0.1:9000"
+admin_username = "admin"
+admin_password = "srinivas@123"
+project_key = "your_new_project_key"
+
 response = requests.get(
     f"{sonarqube_url}/api/issues/search",
     auth=(admin_username, admin_password),

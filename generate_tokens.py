@@ -1,9 +1,9 @@
 import requests
 
-sonarqube_url = "http://your.sonarqube.server"
-admin_username = "your_admin_username"
-admin_password = "your_admin_password"
-token_name = "your_desired_token_name"
+sonarqube_url = "http://127.0.0.1:9000"
+admin_username = "admin"
+admin_password = "srinivas@123"
+token_name = "CPython"
 
 response = requests.post(
     f"{sonarqube_url}/api/user_tokens/generate",
