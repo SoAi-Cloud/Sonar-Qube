@@ -30,10 +30,8 @@ def create_project():
     return {"name": project_name, "key": project_key}
 
 
-def clone_project():
+def clone_project(repo_url: str, project_name: str):
     current_file_directory = os.path.dirname(os.path.abspath(__file__))
-    repo_url = "https://github.com/pallets/flask.git"
-    project_name = "flask"
     target_dir = f"./{project_name}"
     full_path_to_target_dir = os.path.join(current_file_directory, target_dir)
     if os.path.exists(full_path_to_target_dir):
@@ -64,6 +62,8 @@ def write_properties_file(project_name, project_key) -> None:
             f"""
                 sonar.projectKey={project_key}
                 sonar.projectName={project_name}
+                sonar.host.url={sonarqube_host}
+                sonar.token={admin_token}
                 sonar.sources=.
             """
         )
@@ -72,8 +72,14 @@ def write_properties_file(project_name, project_key) -> None:
 def invoke_sonar_scanner(target_dir: str):
     # Change the current working directory to the project directory
     import os
+
     os.chdir(target_dir)
-    subprocess.run(["sonar-scanner"], check=True)
+    subprocess.run(
+        [
+            r"C:\Users\srini\Downloads\sonar-scanner-cli-5.0.1.3006-windows\sonar-scanner-5.0.1.3006-windows\bin\sonar-scanner.bat"
+        ],
+        check=True,
+    )
 
 
 def retrieve_issues(project_key: str):
@@ -94,7 +100,9 @@ def retrieve_issues(project_key: str):
 
 if __name__ == "__main__":
     project = create_project()
-    clone_project()
+    clone_project(repo_url="https://github.com/pallets/flask.git", project_name="flask")
     write_properties_file(project["name"], project["key"])
-    invoke_sonar_scanner("flask")
+    current_file_directory = os.path.dirname(os.path.abspath(__file__))
+    target_dir = f"{current_file_directory}/flask"
+    invoke_sonar_scanner(target_dir)
     retrieve_issues(project["key"])
