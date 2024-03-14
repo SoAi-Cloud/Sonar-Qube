@@ -31,14 +31,35 @@ def create_project():
 
 
 def clone_project():
+    current_file_directory = os.path.dirname(os.path.abspath(__file__))
     repo_url = "https://github.com/pallets/flask.git"
     project_name = "flask"
     target_dir = f"./{project_name}"
-    subprocess.run(["git", "clone", repo_url, target_dir], check=True)
+    full_path_to_target_dir = os.path.join(current_file_directory, target_dir)
+    if os.path.exists(full_path_to_target_dir):
+        print(f"The directory {target_dir} already exists.")
+        if os.path.exists(os.path.join(full_path_to_target_dir, ".git")):
+            print(
+                "The directory is already a git repository. Attempting to pull the latest changes."
+            )
+            try:
+                subprocess.run(["git", "-C", target_dir, "pull"], check=True)
+            except subprocess.CalledProcessError as e:
+                print(f"Failed to pull changes: {e}")
+        else:
+            print(
+                "The directory is not a git repository. Consider removing it or choosing a different directory."
+            )
+    else:
+        try:
+            subprocess.run(["git", "clone", repo_url, target_dir], check=True)
+            print(f"Repository cloned successfully into {target_dir}.")
+        except subprocess.CalledProcessError as e:
+            print(f"Failed to clone the repository: {e}")
 
 
 def write_properties_file(project_name, project_key) -> None:
-    with open("./{project_name}/sonar-project.properties", "w") as fd:
+    with open(f"./{project_name}/sonar-project.properties", "w") as fd:
         fd.write(
             f"""
                 sonar.projectKey={project_key}
@@ -51,10 +72,7 @@ def write_properties_file(project_name, project_key) -> None:
 def invoke_sonar_scanner(target_dir: str):
     # Change the current working directory to the project directory
     import os
-
     os.chdir(target_dir)
-
-    # Run the SonarQube Scanner
     subprocess.run(["sonar-scanner"], check=True)
 
 
