@@ -1,7 +1,7 @@
 import requests
 
 sonarqube_url = "http://127.0.0.1:9000/api/users/create"
-admin_token = "squ_062e0f933191285548d6966d82e09ebe37f7491a" # User Token
+admin_token = "squ_062e0f933191285548d6966d82e09ebe37f7491a"  # User Token
 
 headers = {"Content-Type": "application/x-www-form-urlencoded"}
 user_data = {

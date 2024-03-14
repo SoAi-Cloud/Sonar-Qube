@@ -4,15 +4,15 @@ import random
 import subprocess
 import os
 import datetime
+import time
 
 sonarqube_host = "http://127.0.0.1:9000"
 sonarqube_url = f"{sonarqube_host}/api/projects/create"
 admin_token = "squ_062e0f933191285548d6966d82e09ebe37f7491a"  # User Token
 
 
-def create_project():
+def create_project(project_name: str = "CPython"):
     project_key = f"project_key_{''.join([ random.choice(string.ascii_lowercase+string.digits) for _ in range(5)])}"
-    project_name = "CPython"
 
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
 
@@ -100,11 +100,9 @@ def invoke_sonar_scanner(target_dir: str, project_key: str, project_token: str):
     # Change the current working directory to the project directory
     import os
 
-    scanner_location = (
-        r"D:\sonar-scanner-cli-5.0.1.3006-windows\sonar-scanner-5.0.1.3006-windows\bin"
-    )
-    os.chdir(scanner_location)
-    build_command = f"sonar-scanner.bat -X -Dsonar.projectKey={project_key} -Dsonar.sources={target_dir} -Dsonar.host.url={sonarqube_host} -Dsonar.token={project_token}"
+    scanner_location = r"D:\sonar-scanner-cli-5.0.1.3006-windows\sonar-scanner-5.0.1.3006-windows\bin\sonar-scanner.bat"
+    os.chdir(target_dir)
+    build_command = rf"{scanner_location} -X -Dsonar.projectKey={project_key} -Dsonar.sources=. -Dsonar.host.url={sonarqube_host} -Dsonar.token={project_token}"
     try:
         subprocess.run(
             build_command,
@@ -122,8 +120,7 @@ def retrieve_issues(project_key: str):
     params = {
         "ps": 100,
         "s": "FILE_LINE",
-        "components": "CPython",
-        "projects": project_key,
+        "components": project_key,
         "issueStatuses": "CONFIRMED,OPEN",
         "statuses": "OPEN",
     }
@@ -140,11 +137,12 @@ def retrieve_issues(project_key: str):
 
 
 if __name__ == "__main__":
-    project = create_project()
+    project_name = "flask"
+    project = create_project(project_name=project_name)
     current_file_directory = os.path.dirname(os.path.abspath(__file__))
     target_dir = rf"{current_file_directory}\flask"
     clone_project(repo_url="https://github.com/pallets/flask.git", project_name="flask")
     project_token = generate_project_token(project["key"], project["name"])
-    # write_properties_file("flask", project["name"], project["key"], target_dir, project_token)
     invoke_sonar_scanner(target_dir, project["key"], project_token)
+    time.sleep(10)
     retrieve_issues(project["key"])
