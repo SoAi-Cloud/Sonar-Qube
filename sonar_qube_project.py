@@ -100,7 +100,9 @@ def invoke_sonar_scanner(target_dir: str, project_key: str, project_token: str):
     # Change the current working directory to the project directory
     import os
 
-    scanner_location = r"C:\Users\srini\Downloads\sonar-scanner-cli-5.0.1.3006-windows\sonar-scanner-5.0.1.3006-windows\bin"
+    scanner_location = (
+        r"D:\sonar-scanner-cli-5.0.1.3006-windows\sonar-scanner-5.0.1.3006-windows\bin"
+    )
     os.chdir(scanner_location)
     build_command = f"sonar-scanner.bat -X -Dsonar.projectKey={project_key} -Dsonar.sources={target_dir} -Dsonar.host.url={sonarqube_host} -Dsonar.token={project_token}"
     try:
