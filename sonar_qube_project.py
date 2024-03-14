@@ -118,9 +118,16 @@ def invoke_sonar_scanner(target_dir: str, project_key: str, project_token: str):
 
 def retrieve_issues(project_key: str):
     sonarqube_url = f"{sonarqube_host}/api/issues/search"
-    headers = {"Authorization": f"Basic {admin_token}"}
-    params = {"projects": project_key, "statuses": "OPEN"}
-    response = requests.get(sonarqube_url, headers=headers, params=params)
+    auth = (admin_token, "")
+    params = {
+        "ps": 100,
+        "s": "FILE_LINE",
+        "components": "CPython",
+        "projects": project_key,
+        "issueStatuses": "CONFIRMED,OPEN",
+        "statuses": "OPEN",
+    }
+    response = requests.get(sonarqube_url, auth=auth, params=params)
     if response.ok:
         issues = response.json().get("issues", [])
         for issue in issues:
