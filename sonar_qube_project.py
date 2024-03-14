@@ -3,6 +3,7 @@ import string
 import random
 import subprocess
 import os
+import datetime
 
 sonarqube_host = "http://127.0.0.1:9000"
 sonarqube_url = f"{sonarqube_host}/api/projects/create"
@@ -56,30 +57,61 @@ def clone_project(repo_url: str, project_name: str):
             print(f"Failed to clone the repository: {e}")
 
 
-def write_properties_file(project_name, project_key) -> None:
-    with open(f"./{project_name}/sonar-project.properties", "w") as fd:
+def write_properties_file(
+    local_project_name, project_name, project_key, target_dir, project_token
+) -> None:
+    with open(f"./{local_project_name}/sonar-project.properties", "w") as fd:
         fd.write(
-            f"""
-                sonar.projectKey={project_key}
-                sonar.projectName={project_name}
-                sonar.host.url={sonarqube_host}
-                sonar.token={admin_token}
-                sonar.sources=.
+            rf"""
+sonar.projectKey={project_key}
+sonar.projectName={project_name}
+sonar.host.url={sonarqube_host}
+sonar.token={project_token}
+sonar.sources={target_dir}
             """
         )
 
 
-def invoke_sonar_scanner(target_dir: str):
+def generate_project_token(project_key: str, project_name: str):
+    expiration_date = datetime.datetime.now() + datetime.timedelta(days=30)
+    expiration_date_str = expiration_date.strftime("%Y-%m-%d")
+    sonarqube_url = f"{sonarqube_host}/api/user_tokens/generate"
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    data = {
+        "name": f"Analyse {project_name}{random.choice(string.ascii_lowercase+string.digits)}",
+        "type": "PROJECT_ANALYSIS_TOKEN",
+        "projectKey": project_key,
+        "expirationDate": expiration_date_str,
+    }
+    response = requests.post(
+        sonarqube_url, headers=headers, data=data, auth=(admin_token, "")
+    )
+    if response.ok:
+        token = response.json().get("token")
+        print(f"Generated Token for {project_key}: {token}")
+        return token
+    else:
+        print(
+            f"Failed to generate token for {project_key}. Status code: {response.status_code}, Response: {response.text}"
+        )
+
+
+def invoke_sonar_scanner(target_dir: str, project_key: str, project_token: str):
     # Change the current working directory to the project directory
     import os
 
-    os.chdir(target_dir)
-    subprocess.run(
-        [
-            r"C:\Users\srini\Downloads\sonar-scanner-cli-5.0.1.3006-windows\sonar-scanner-5.0.1.3006-windows\bin\sonar-scanner.bat"
-        ],
-        check=True,
-    )
+    scanner_location = r"C:\Users\srini\Downloads\sonar-scanner-cli-5.0.1.3006-windows\sonar-scanner-5.0.1.3006-windows\bin"
+    os.chdir(scanner_location)
+    build_command = f"sonar-scanner.bat -X -Dsonar.projectKey={project_key} -Dsonar.sources={target_dir} -Dsonar.host.url={sonarqube_host} -Dsonar.token={project_token}"
+    try:
+        subprocess.run(
+            build_command,
+            check=True,
+        )
+    except subprocess.CalledProcessError as e:
+        print(f"Failed to run sonar-scanner: {e}")
+    except Exception as e:
+        print(f"Failed to run sonar-scanner: {e}")
 
 
 def retrieve_issues(project_key: str):
@@ -100,9 +132,10 @@ def retrieve_issues(project_key: str):
 
 if __name__ == "__main__":
     project = create_project()
-    clone_project(repo_url="https://github.com/pallets/flask.git", project_name="flask")
-    write_properties_file(project["name"], project["key"])
     current_file_directory = os.path.dirname(os.path.abspath(__file__))
-    target_dir = f"{current_file_directory}/flask"
-    invoke_sonar_scanner(target_dir)
+    target_dir = rf"{current_file_directory}\flask"
+    clone_project(repo_url="https://github.com/pallets/flask.git", project_name="flask")
+    project_token = generate_project_token(project["key"], project["name"])
+    # write_properties_file("flask", project["name"], project["key"], target_dir, project_token)
+    invoke_sonar_scanner(target_dir, project["key"], project_token)
     retrieve_issues(project["key"])
