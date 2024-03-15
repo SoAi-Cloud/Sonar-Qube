@@ -5,7 +5,13 @@ import subprocess
 import os
 import datetime
 import time
+from pprint import pprint
+from pprint import pformat
+from typing import Any
 
+from pygments import highlight
+from pygments.formatters import Terminal256Formatter
+from pygments.lexers import PythonLexer
 sonarqube_host = "http://127.0.0.1:9000"
 sonarqube_url = f"{sonarqube_host}/api/projects/create"
 admin_token = "squ_062e0f933191285548d6966d82e09ebe37f7491a"  # User Token
@@ -114,6 +120,13 @@ def invoke_sonar_scanner(target_dir: str, project_key: str, project_token: str):
         print(f"Failed to run sonar-scanner: {e}")
 
 
+
+
+
+def pprint_color(obj: Any) -> None:
+    """Pretty-print in color."""
+    print(highlight(pformat(obj), PythonLexer(), Terminal256Formatter()), end="")
+
 def retrieve_issues(project_key: str):
     sonarqube_url = f"{sonarqube_host}/api/issues/search"
     auth = (admin_token, "")
@@ -121,7 +134,7 @@ def retrieve_issues(project_key: str):
         "ps": 100,
         "s": "FILE_LINE",
         "components": project_key,
-        "issueStatuses": "CONFIRMED,OPEN",
+        "issueStatuses": "CONFIRMED,OPEN",  # For security issues, use impactSoftwareQualities=SECURITY
         "statuses": "OPEN",
     }
     response = requests.get(sonarqube_url, auth=auth, params=params)
@@ -129,7 +142,7 @@ def retrieve_issues(project_key: str):
         issues = response.json().get("issues", [])
         for issue in issues:
             # Process each issue as needed
-            print(issue)
+            pprint(issue, indent=2)
     else:
         print(
             f"Failed to retrieve issues. Status code: {response.status_code}, Response: {response.text}"
