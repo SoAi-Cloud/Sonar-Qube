@@ -152,11 +152,12 @@ def retrieve_issues(project_key: str, use_pprint: bool = False):
 
 
 if __name__ == "__main__":
-    project_name = "flask"
+    project_name = "ASPDOTNETCORE"
+    repo_url = "https://github.com/dotnet/aspnetcore.git"
     project = create_project(project_name=project_name)
     current_file_directory = os.path.dirname(os.path.abspath(__file__))
-    target_dir = rf"{current_file_directory}\flask"
-    clone_project(repo_url="https://github.com/pallets/flask.git", project_name="flask")
+    target_dir = rf"{current_file_directory}\{project_name}"
+    clone_project(repo_url=repo_url, project_name=project_name)
     project_token = generate_project_token(project["key"], project["name"])
     invoke_sonar_scanner(target_dir, project["key"], project_token)
     time.sleep(10)
