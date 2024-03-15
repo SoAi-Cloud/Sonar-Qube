@@ -160,4 +160,4 @@ if __name__ == "__main__":
     project_token = generate_project_token(project["key"], project["name"])
     invoke_sonar_scanner(target_dir, project["key"], project_token)
     time.sleep(10)
-    retrieve_issues(project["key"])
+    retrieve_issues(project["key"], use_pprint=True)
